@@ -115,7 +115,8 @@ function replaceBlock(readme, [start, end], body) {
 module.exports = async ({ github, context, core }) => {
   const { owner, repo } = context.repo;
 
-  const { data } = await github.graphql(CONTRIBUTIONS_QUERY, {
+  // github.graphql() returns the response body itself, unlike the github.rest.* calls below.
+  const data = await github.graphql(CONTRIBUTIONS_QUERY, {
     login: owner,
     windowStart: daysAgo(ACTIVITY_WINDOW_DAYS),
     yearStart: daysAgo(STREAK_WINDOW_DAYS),
