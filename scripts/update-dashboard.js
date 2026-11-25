@@ -4,7 +4,7 @@ const README_PATH = "README.md";
 const MAX_PRS = 10;
 const MAX_TITLE_LENGTH = 80;
 const ACTIVITY_WINDOW_DAYS = 30;
-const STREAK_WINDOW_DAYS = 360;
+const STREAK_WINDOW_DAYS = 365;
 
 const BLOCKS = {
   activity: ["<!-- ACTIVITY:START -->", "<!-- ACTIVITY:END -->"],
