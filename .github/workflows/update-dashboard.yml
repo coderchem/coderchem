@@ -1,0 +1,29 @@
+name: Update profile dashboard
+
+on:
+  schedule:
+    - cron: "41 1 * * *" # daily at 01:41 UTC (09:41 Beijing time)
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/update-dashboard.yml"
+      - "scripts/update-dashboard.js"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profile-dashboard
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const path = require("path");
+            const update = require(path.resolve("${{ github.workspace }}", "scripts", "update-dashboard.js"));
+            await update({ github, context, core });
