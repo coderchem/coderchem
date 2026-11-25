@@ -72,8 +72,8 @@ function prState(item) {
   return item.draft ? "🚧 Draft" : "🟢 Open";
 }
 
-function renderActivity(user, streak) {
-  const { recent, year } = user;
+function renderActivity(user, streak, yearTotal) {
+  const { recent } = user;
   return [
     "**近 30 天**",
     "",
@@ -82,7 +82,7 @@ function renderActivity(user, streak) {
     `- 👀 PR 评审：**${recent.totalPullRequestReviewContributions}**`,
     `- 📝 Issue：**${recent.totalIssueContributions}**`,
     "",
-    `🔥 连续贡献 **${streak}** 天 · 近一年 **${year.contributionCalendar?.totalContributions ?? 0}** 次`,
+    `🔥 连续贡献 **${streak}** 天 · 近一年 **${yearTotal}** 次`,
   ].join("\n");
 }
 
@@ -136,9 +136,16 @@ module.exports = async ({ github, context, core }) => {
   const { data: file } = await github.rest.repos.getContent({ owner, repo, path: README_PATH });
   const readme = Buffer.from(file.content, "base64").toString("utf8");
 
+  // Sum the calendar days ourselves: the calendar's own totalContributions field came back as 0
+  // for the Actions token even though the days were populated.
   const days = data.user.year.contributionCalendar?.weeks.flatMap((week) => week.contributionDays) ?? [];
+  const streak = currentStreak(days);
+  const yearTotal = days.reduce((total, day) => total + day.contributionCount, 0);
+  core.info(`contributions in the last 30 days: ${JSON.stringify(data.user.recent)}`);
+  core.info(`calendar days: ${days.length}, year total: ${yearTotal}, current streak: ${streak}`);
+
   const updated = replaceBlock(
-    replaceBlock(readme, BLOCKS.activity, renderActivity(data.user, currentStreak(days))),
+    replaceBlock(readme, BLOCKS.activity, renderActivity(data.user, streak, yearTotal)),
     BLOCKS.prs,
     renderPrList(search.items, owner),
   );
